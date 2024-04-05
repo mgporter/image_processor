@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 2px solid transparent;
+  padding: 0.2rem 1.2rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #757575;
+  color:#f1f1f1;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+button:disabled {
+  background-color: #4f4f4f;
+  color:#b4b4b4;
+}
+button:hover:enabled {
+  border-color: #cbceff;
+  background-color: #4c4c4c;
+}
+button:focus:enabled,
+button:focus-visible:enabled {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* @media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+} */
+
+div#root {
+  display: grid;
+  min-width: 320px;
+  width: 100%;
+  min-height: 100vh;
+  grid-template-areas: "lp mn";
+  grid-template-columns: 300px ;
+}
+
+.mainview {
+  grid-area: mn;
+}
+
+.leftpanel {
+  grid-area: lp;
+}
