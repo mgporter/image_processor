@@ -1,5 +1,6 @@
 import { dispatcher } from "./Dispatcher";
 import { Jimp, JimpConstructors } from "../jimptypes";
+import { EffectType } from "./EffectType";
 
 // @ts-expect-error Jimp is global object
 const jimp = (window.Jimp as JimpConstructors);
@@ -32,11 +33,27 @@ class ImageHolder {
     return await this.image.getBase64Async("image/jpeg");
   }
 
-  async applyEffect(effect: (buffer: Jimp) => Promise<Uint8Array>) {
+  async applyEffect(effectType: EffectType) {
     if (this.image == null) return null;
-    const result = await effect(this.image);
-    this.image.bitmap.data = (result as Buffer);
-    dispatcher.dispatch<"updateView">("updateView", null);
+
+    // Use url string to allow passing in a TS file to worker. "Module" is needed to use import statements.
+    const worker = new Worker(new URL("./EffectWorker.ts", import.meta.url), {type: 'module'});  
+
+    // Handle worker's results
+    worker.onmessage = (e) => {
+      if (this.image == null) return null;
+      this.image.bitmap.data = (e.data as Buffer);
+      dispatcher.dispatch<"updateView">("updateView", null);
+    }
+
+    // Start the worker
+    worker.postMessage({
+      buffer: this.image.bitmap.data,
+      width: this.image.bitmap.width,
+      height: this.image.bitmap.height,
+      effectType: effectType
+    }, [this.image.bitmap.data.buffer]);
+
   }
 
 

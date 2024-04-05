@@ -1,5 +1,4 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { BlurImage } from "./BlurImage";
 import { dispatcher } from "./Dispatcher";
 import { imageHolder } from "./ImageHolder";
 import { blurEffect } from "./BlurEffect";
@@ -30,7 +29,8 @@ export default function LeftPanel() {
   return (
     <aside className="leftpanel flex flex-col items-end gap-4">
       <input className="max-w-56" type="file" id="fileinput" onChange={handleFileSelection} />
-      <button disabled={!imageReady} onClick={async () => imageHolder.applyEffect(blurEffect)}>Add blur</button>
+      <button disabled={!imageReady} 
+        onClick={() => imageHolder.applyEffect("blur")}>Add blur</button>
     </aside>
   )
 
