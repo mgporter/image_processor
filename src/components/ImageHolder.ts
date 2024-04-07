@@ -33,9 +33,9 @@ class ImageHolder {
     return await this.image.getBase64Async("image/jpeg");
   }
 
-  async applyEffect(effectType: EffectType) {
+  async applyEffect(effectType: EffectType, useWasm: boolean) {
     if (this.image == null) return null;
-
+    
     // Use url string to allow passing in a TS file to worker. "Module" is needed to use import statements.
     const worker = new Worker(new URL("./EffectWorker.ts", import.meta.url), {type: 'module'});  
 
@@ -51,7 +51,8 @@ class ImageHolder {
       buffer: this.image.bitmap.data,
       width: this.image.bitmap.width,
       height: this.image.bitmap.height,
-      effectType: effectType
+      effectType: effectType,
+      useWasm: useWasm,
     }, [this.image.bitmap.data.buffer]);
 
   }

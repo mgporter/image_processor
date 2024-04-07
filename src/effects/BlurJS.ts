@@ -1,7 +1,7 @@
 type Pixel = [number, number, number, number];
 type Coordinate = [number, number];
 
-class BlurImage {
+class BlurJS {
 
   private data;
   private width;
@@ -13,7 +13,10 @@ class BlurImage {
     this.height = height;
   }
 
-  blur(grid: number[]): Uint8Array {
+  async blur(grid: number[]): Promise<Uint8Array> {
+
+    const start = performance.now();
+
     let output = new Uint8Array(this.data.length);
     const halflength = Math.floor(grid.length / 2);
 
@@ -48,6 +51,8 @@ class BlurImage {
 
     }
 
+    console.log(performance.now() - start);
+
     return output;
 
   }
@@ -80,7 +85,7 @@ class BlurImage {
   coordinatesToIndex(x: number, y: number): number {
     x = this.clampCoordinate(x, this.width);
     y = this.clampCoordinate(y, this.height);
-    if (x >= this.width) x = this.width - ((x+2) - this.width);
+    // if (x >= this.width) x = this.width - ((x+2) - this.width);
     return ((x % this.width) + (y * this.width)) * 4;
   }
 
@@ -94,4 +99,4 @@ class BlurImage {
 
 }
 
-export { BlurImage };
+export { BlurJS };

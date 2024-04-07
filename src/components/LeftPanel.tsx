@@ -1,7 +1,6 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { dispatcher } from "./Dispatcher";
 import { imageHolder } from "./ImageHolder";
-import { blurEffect } from "./BlurEffect";
 
 // interface LeftPanelProps {
 //   dispatcher: Dispatcher;
@@ -30,7 +29,9 @@ export default function LeftPanel() {
     <aside className="leftpanel flex flex-col items-end gap-4">
       <input className="max-w-56" type="file" id="fileinput" onChange={handleFileSelection} />
       <button disabled={!imageReady} 
-        onClick={() => imageHolder.applyEffect("blur")}>Add blur</button>
+        onClick={() => imageHolder.applyEffect("blur", false)}>Add blur</button>
+      <button disabled={!imageReady} 
+        onClick={() => imageHolder.applyEffect("blur", true)}>Add blur with Wasm</button>
     </aside>
   )
 

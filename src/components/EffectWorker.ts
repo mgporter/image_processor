@@ -1,12 +1,13 @@
 import { EffectType } from "./EffectType";
-import { blurEffect } from "./BlurEffect";
+import { blurEffect } from "../effects/BlurEffect";
 
-self.onmessage = (e) => {
+self.onmessage = async (e) => {
 
   let result: Uint8Array;
   switch((e.data.effectType as EffectType)) {
     case "blur": {
-      result = blurEffect(e.data.buffer, e.data.width, e.data.height);
+      result = await blurEffect(e.data.buffer, e.data.width, e.data.height, e.data.useWasm);
+      break;
     }
   }
 
