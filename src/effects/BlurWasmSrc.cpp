@@ -34,6 +34,7 @@ class BlurWasm {
   const int width;
   const int height;
   unsigned char* data;
+  unsigned char* output;
   const int dataLength;
   const double* grid;
   const int gridLength;
@@ -41,41 +42,16 @@ class BlurWasm {
 
   public:
   BlurWasm(int w, int h, unsigned char* data_pointer, int dLength, double* grid, int grid_length )
-    : width{w}
-    , height{h}
-    , data{data_pointer}
-    , dataLength{dLength}
-    , grid{grid}
-    , gridLength{grid_length}
-    , gridLengthHalf{grid_length / 2} {}
+    : width{w}                            // the width of the image
+    , height{h}                           // the height of the image
+    , data{data_pointer}                  // the start of the image data array
+    , output{data_pointer + dLength}      // the start of an array to hold temporary image data for calculation
+    , dataLength{dLength}                 // the length of the image data array
+    , grid{grid}                          // the start of the array that holds the Gaussian values
+    , gridLength{grid_length}             // the length of the array for the Gaussian values
+    , gridLengthHalf{grid_length / 2} {}  // the length equal to half of the gridLength
 
   int doBlur() {
-    
-    unsigned char* output = data + dataLength;
-    unsigned char* output2 = output + dataLength;
-
-    // double grid[9];
-    // double* grid = reinterpret_cast<double*>(data - 200);
-    // grid[0] = 0.05;
-    // grid[1] = 0.09;
-    // grid[2] = 0.12;
-    // grid[3] = 0.15;
-    // grid[4] = 0.18;
-    // grid[5] = 0.15;
-    // grid[6] = 0.12;
-    // grid[7] = 0.09;
-    // grid[8] = 0.05;
-
-    // const int gridLength{ 9 };
-    // int gridLengthHalf{ gridLength / 2 };
-
-    // double grid[3];
-    // grid[0] = 0.2;
-    // grid[1] = 0.6;
-    // grid[2] = 0.2;
-
-    // const int gridLength{ 3 };
-    // int gridLengthHalf{ gridLength / 2 };
 
     // Do horizontal pass
     for (int px {0}; px < dataLength; px += 4) {
@@ -109,7 +85,7 @@ class BlurWasm {
       }
 
       // Write result to data array
-      setPixelFromIndex(output2, sumRGBA, px);
+      setPixelFromIndex(data, sumRGBA, px);
 
     }
 

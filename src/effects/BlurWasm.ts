@@ -1,10 +1,9 @@
 import wasm from "./BlurWasmSrc.wasm?url";
 
 async function BlurWasm(data: Uint8Array, width: number, height: number) {
-
+  // ONLY ACCEPT IMAGES UP TO 8.38 mil pixels
 
   // Create new memory
-  // const length =  data.byteLength / 65536;
   const MEMORY_LENGTH = 1024;
   const memory = new WebAssembly.Memory({initial: MEMORY_LENGTH, maximum: MEMORY_LENGTH});
 
@@ -29,7 +28,7 @@ async function BlurWasm(data: Uint8Array, width: number, height: number) {
   }
 
   // Create a memory space for the image data
-  const DATA_OFFSET = 200;
+  const DATA_OFFSET = memory.buffer.byteLength - (data.byteLength * 2);
   const heap = new Uint8Array(memory.buffer, DATA_OFFSET, data.byteLength);
   
   // Copy data from image ArrayBuffer to heap
@@ -42,9 +41,8 @@ async function BlurWasm(data: Uint8Array, width: number, height: number) {
   // Call the blur function
   exports.blur(width, height, DATA_OFFSET, data.byteLength, GRID_OFFSET, grid.length);
   console.log(performance.now() - start);
-
   
-  return new Uint8Array(heap.buffer.slice(DATA_OFFSET + data.byteLength*2, DATA_OFFSET + data.byteLength*3));
+  return new Uint8Array(heap.buffer.slice(DATA_OFFSET, DATA_OFFSET + data.byteLength));
 }
 
 export { BlurWasm };
