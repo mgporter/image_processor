@@ -1,7 +1,5 @@
-//// emcc BlurWasmSrc.cpp -s WASM=1 -s MODULARIZE=1 -s ASSERTIONS -lembind -o BlueWasmSrc.js --embind-emit-tsd BlurWasmSrc.d.ts
-
 // emcc BlurWasmSrc.cpp -o BlurWasmSrc.js -s EXPORTED_FUNCTIONS='["_blur"]' -s IMPORTED_MEMORY=1 -s TOTAL_MEMORY=64MB -std=c++20 -O2
-#include <emscripten.h>
+// #include <emscripten.h>
 #include <math.h>
 #include <vector>
 
