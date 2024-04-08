@@ -1,27 +1,26 @@
 //// emcc BlurWasmSrc.cpp -s WASM=1 -s MODULARIZE=1 -s ASSERTIONS -lembind -o BlueWasmSrc.js --embind-emit-tsd BlurWasmSrc.d.ts
 
-// emcc BlurWasmSrc.cpp -o BlurWasmSrc.js -s EXPORTED_FUNCTIONS='["_blur"]' -s IMPORTED_MEMORY=1 -s TOTAL_MEMORY=64MB -std=c++20 -Os
+// emcc BlurWasmSrc.cpp -o BlurWasmSrc.js -s EXPORTED_FUNCTIONS='["_blur"]' -s IMPORTED_MEMORY=1 -s TOTAL_MEMORY=64MB -std=c++20 -O2
 #include <emscripten.h>
-// #include <utility>
 #include <math.h>
-// // #include <vector>
+#include <vector>
 
+// #include <utility>
 // use std::cmp_equal / cmp_not_equal / cmp_less / cmp_greater / cmp_less_equal / cmp_greater_equal
+
 
 struct Pixel {
   unsigned char red{};
   unsigned char green{};
   unsigned char blue{};
   unsigned char alpha{};
+};
 
-  // Pixel operator+(const Pixel& pixel) const {
-  //   return Pixel(
-  //     red + pixel.red,
-  //     green + pixel.green,
-  //     blue + pixel.blue,
-  //     alpha + pixel.alpha);
-  // }
-
+struct DoublePixel {
+  double red{};
+  double green{};
+  double blue{};
+  double alpha{};
 };
 
 struct Coordinate {
@@ -32,42 +31,57 @@ struct Coordinate {
 class BlurWasm {
 
   private:
-  int width;
-  int height;
+  const int width;
+  const int height;
   unsigned char* data;
   const int dataLength;
+  const double* grid;
+  const int gridLength;
+  const int gridLengthHalf;
 
   public:
-  BlurWasm(int w, int h, unsigned char* d, int l)
+  BlurWasm(int w, int h, unsigned char* data_pointer, int dLength, double* grid, int grid_length )
     : width{w}
     , height{h}
-    , data{d}
-    , dataLength{l} {}
+    , data{data_pointer}
+    , dataLength{dLength}
+    , grid{grid}
+    , gridLength{grid_length}
+    , gridLengthHalf{grid_length / 2} {}
 
   int doBlur() {
     
     unsigned char* output = data + dataLength;
     unsigned char* output2 = output + dataLength;
 
-    double grid[9];
-    grid[0] = 0.05;
-    grid[1] = 0.09;
-    grid[2] = 0.12;
-    grid[3] = 0.15;
-    grid[4] = 0.18;
-    grid[5] = 0.15;
-    grid[6] = 0.12;
-    grid[7] = 0.09;
-    grid[8] = 0.05;
+    // double grid[9];
+    // double* grid = reinterpret_cast<double*>(data - 200);
+    // grid[0] = 0.05;
+    // grid[1] = 0.09;
+    // grid[2] = 0.12;
+    // grid[3] = 0.15;
+    // grid[4] = 0.18;
+    // grid[5] = 0.15;
+    // grid[6] = 0.12;
+    // grid[7] = 0.09;
+    // grid[8] = 0.05;
 
-    int gridLength{ 9 };
-    int gridLengthHalf{ 4 };
+    // const int gridLength{ 9 };
+    // int gridLengthHalf{ gridLength / 2 };
+
+    // double grid[3];
+    // grid[0] = 0.2;
+    // grid[1] = 0.6;
+    // grid[2] = 0.2;
+
+    // const int gridLength{ 3 };
+    // int gridLengthHalf{ gridLength / 2 };
 
     // Do horizontal pass
     for (int px {0}; px < dataLength; px += 4) {
 
       Coordinate coord { indexToXY(px) };
-      Pixel sumRGBA { 0,0,0,0 };
+      DoublePixel sumRGBA { 0,0,0,0 };
 
       for (int j {0}; j < gridLength; j++ ) {
         int offset { j - gridLengthHalf };
@@ -85,7 +99,7 @@ class BlurWasm {
     for (int px {0}; px < dataLength; px += 4) {
 
       Coordinate coord { indexToXY(px) };
-      Pixel sumRGBA { 0,0,0,0 };
+      DoublePixel sumRGBA { 0,0,0,0 };
 
       for (int j {0}; j < gridLength; j++ ) {
         int offset { j - gridLengthHalf };
@@ -103,7 +117,9 @@ class BlurWasm {
 
   }
 
-  void addValuesToPixel(Pixel& pixel, const Pixel& valuesToAdd, const double amount) const {
+  private:
+
+  void addValuesToPixel(DoublePixel& pixel, const Pixel& valuesToAdd, const double amount) const {
     pixel.red += (valuesToAdd.red * amount);
     pixel.green += (valuesToAdd.green * amount);
     pixel.blue += (valuesToAdd.blue * amount);
@@ -115,15 +131,15 @@ class BlurWasm {
     return {i % width, i / width};
   }
 
-  Pixel getPixelFromIndex(unsigned char* arr, const int i) const {
+  Pixel getPixelFromIndex(const unsigned char* arr, const int i) const {
     return {arr[i], arr[i+1], arr[i+2], arr[i+3]};
   }
 
-  void setPixelFromIndex(unsigned char* arr, const Pixel& pixel, const int i) {
-    arr[i] = pixel.red;
-    arr[i+1] = pixel.green;
-    arr[i+2] = pixel.blue;
-    arr[i+3] = pixel.alpha;
+  void setPixelFromIndex(unsigned char* arr, const DoublePixel& pixel, const int i) {
+    arr[i] = static_cast<unsigned char>(pixel.red);
+    arr[i+1] = static_cast<unsigned char>(pixel.green);
+    arr[i+2] = static_cast<unsigned char>(pixel.blue);
+    arr[i+3] = static_cast<unsigned char>(pixel.alpha);
   }
 
   Pixel getPixel(unsigned char* arr, int x, int y) {
@@ -148,10 +164,10 @@ class BlurWasm {
 
 extern "C" {
 
-  // int main() { return 0; }
 
-  int blur(int width, int height, unsigned char *arr, int length) {
-    BlurWasm blur{width, height, arr, length};
+
+  int blur(int w, int h, unsigned char* data_pointer, int dLength, double* grid, int grid_length) {
+    BlurWasm blur{w, h, data_pointer, dLength, grid, grid_length};
     return blur.doBlur();
   }
 
