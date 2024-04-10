@@ -39,10 +39,10 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+button, .button {
   border-radius: 8px;
-  border: 2px solid transparent;
-  padding: 0.2rem 1.2rem;
+  /* border: 1px solid transparent; */
+  /* padding: 0.2rem 1.2rem; */
   font-size: 1rem;
   font-family: inherit;
   background-color: #757575;
@@ -50,39 +50,28 @@ button {
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s;
 }
-button:disabled {
+button:disabled, .button.disabled {
   background-color: #4f4f4f;
+  border-color: transparent;
   color:#b4b4b4;
 }
-button:hover:enabled {
-  border-color: #cbceff;
+button:hover:enabled, .button:hover {
+  border-color: #9294b3;
   background-color: #4c4c4c;
 }
-button:focus:enabled,
-button:focus-visible:enabled {
+button:focus:enabled, .button:focus:enabled, 
+button:focus-visible:enabled, button:focus-visible:enabled {
   outline: 4px auto -webkit-focus-ring-color;
 }
-
-/* @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
 
 div#root {
   display: grid;
   min-width: 320px;
+  max-width: 1000px;
   width: 100%;
   min-height: 100vh;
   grid-template-areas: "lp mn";
-  grid-template-columns: 300px ;
+  grid-template-columns: 40% 60% ;
 }
 
 .mainview {
@@ -91,4 +80,40 @@ div#root {
 
 .leftpanel {
   grid-area: lp;
+}
+
+.loadingflash::before {
+  content: "";
+  inset: 0;
+  position: absolute;
+  background-image: linear-gradient(90deg, rgba(36,36,36,0) 46%, rgba(91,93,110,0.7) 53%, rgba(91,93,110,0.7) 57%, rgba(36,36,36,0) 57%);
+  animation: loadingflash 4s infinite linear;
+}
+
+@keyframes loadingflash {
+  0% {
+    transform: translate(-60%, 0);
+  }
+  100% {
+    transform: translate(150%, 0);
+  }
+}
+
+
+#mainimgcover {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: bolder;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+#mainimgcover.processing {
+  opacity: 1;
 }

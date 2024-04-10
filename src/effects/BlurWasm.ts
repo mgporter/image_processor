@@ -1,6 +1,6 @@
 import wasm from "./BlurWasmSrc.wasm?url";
 
-async function BlurWasm(data: Uint8Array, width: number, height: number) {
+async function BlurWasm(data: Uint8Array, width: number, height: number, grid: number[]) {
   // ONLY ACCEPT IMAGES UP TO 8.38 mil pixels
 
   // Create new memory
@@ -15,11 +15,9 @@ async function BlurWasm(data: Uint8Array, width: number, height: number) {
 
   const result = await WebAssembly.instantiateStreaming(fetch(wasm), importObj);
   const exports = result.instance.exports;
-  console.log(exports);
 
   // Create a memory space for the grid (the Gaussian blur array)
   const GRID_OFFSET = 0;
-  const grid = [0.05, 0.09, 0.12, 0.15, 0.18, 0.15, 0.12, 0.09, 0.05];
   const gridMemory = new Float64Array(memory.buffer, GRID_OFFSET, grid.length);
 
   // Copy the grid's values to the heap, so that the WASM module can access them
@@ -39,10 +37,11 @@ async function BlurWasm(data: Uint8Array, width: number, height: number) {
   const start = performance.now();
 
   // Call the blur function
+  // @ts-expect-error no type declaration yet for the exported wasm method "blur"
   exports.blur(width, height, DATA_OFFSET, data.byteLength, GRID_OFFSET, grid.length);
-  console.log(performance.now() - start);
+  const calcTime = performance.now() - start;
   
-  return new Uint8Array(heap.buffer.slice(DATA_OFFSET, DATA_OFFSET + data.byteLength));
+  return {calcTime: calcTime, result: new Uint8Array(heap.buffer.slice(DATA_OFFSET, DATA_OFFSET + data.byteLength))};
 }
 
 export { BlurWasm };

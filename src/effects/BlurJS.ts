@@ -1,3 +1,5 @@
+import { EffectResult } from "../components/ImageHolder";
+
 type Pixel = [number, number, number, number];
 type Coordinate = [number, number];
 
@@ -13,11 +15,11 @@ class BlurJS {
     this.height = height;
   }
 
-  async blur(grid: number[]): Promise<Uint8Array> {
+  async blur(grid: number[]): Promise<EffectResult> {
 
     const start = performance.now();
 
-    let output = new Uint8Array(this.data.length);
+    const output = new Uint8Array(this.data.byteLength);
     const halflength = Math.floor(grid.length / 2);
 
     // Do horizontal pass
@@ -27,15 +29,15 @@ class BlurJS {
 
       for (let j = 0; j < grid.length; j++) {
         const offset = j - halflength;
-        this.addValuesToPixel(sumRGBA, this.getPixel(x + offset, y), grid[j]);
+        this.addValuesToPixel(sumRGBA, this.getPixel(this.data, x + offset, y), grid[j]);
       }
 
       this.setPixelFromIndex(output, sumRGBA, px);
 
     }
 
-    this.data = output;
-    output = new Uint8Array(this.data.length);
+    // this.data = output;
+    // output = new Uint8Array(this.data.length);
 
     // Do Vertical pass
     for (let px = 0; px < this.data.length; px += 4) {
@@ -44,16 +46,16 @@ class BlurJS {
 
       for (let j = 0; j < grid.length; j++) {
         const offset = j - halflength;
-        this.addValuesToPixel(sumRGBA, this.getPixel(x, y + offset), grid[j]);
+        this.addValuesToPixel(sumRGBA, this.getPixel(output, x, y + offset), grid[j]);
       }
 
-      this.setPixelFromIndex(output, sumRGBA, px);
+      this.setPixelFromIndex(this.data, sumRGBA, px);
 
     }
 
-    console.log(performance.now() - start);
+    const calcTime = performance.now() - start;
 
-    return output;
+    return {calcTime: calcTime, result: this.data};
 
   }
 
@@ -66,8 +68,8 @@ class BlurJS {
     return [i % this.width, Math.floor(i / this.width)];
   }
 
-  getPixelFromIndex(i: number): Pixel {
-    return [this.data[i], this.data[i+1], this.data[i+2], this.data[i+3]];  // [R, G, B, A];
+  getPixelFromIndex(array: Uint8Array, i: number): Pixel {
+    return [array[i], array[i+1], array[i+2], array[i+3]];  // [R, G, B, A];
   }
 
   setPixelFromIndex(array: Uint8Array, pixel: Pixel, i: number): void {
@@ -77,15 +79,14 @@ class BlurJS {
     array[i+3] = pixel[3];
   }
 
-  getPixel(x: number, y: number): Pixel {
+  getPixel(array: Uint8Array, x: number, y: number): Pixel {
     const i = this.coordinatesToIndex(x, y);
-    return this.getPixelFromIndex(i);
+    return this.getPixelFromIndex(array, i);
   }
 
   coordinatesToIndex(x: number, y: number): number {
     x = this.clampCoordinate(x, this.width);
     y = this.clampCoordinate(y, this.height);
-    // if (x >= this.width) x = this.width - ((x+2) - this.width);
     return ((x % this.width) + (y * this.width)) * 4;
   }
 

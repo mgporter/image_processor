@@ -1,16 +1,29 @@
-import { EffectType } from "./EffectType";
+import { EffectType } from "../effects/EffectType";
 import { blurEffect } from "../effects/BlurEffect";
+import { EffectResult, EffectWorkerResult } from "./ImageHolder";
 
-self.onmessage = async (e) => {
+const scope = (self as unknown) as Worker;
 
-  let result: Uint8Array;
+scope.onmessage = async (e) => {
+
+  const perfStart = performance.now();
+
+  let effectResult: EffectResult;
+  
   switch((e.data.effectType as EffectType)) {
     case "blur": {
-      result = await blurEffect(e.data.buffer, e.data.width, e.data.height, e.data.useWasm);
+      effectResult = await blurEffect(e.data.buffer, e.data.width, e.data.height, e.data.values, e.data.useWasm);
       break;
     }
   }
 
-  // @ts-expect-error ts function signature for postMessage here is wrong
-  self.postMessage(result, [result.buffer]);
+  const perfEnd = performance.now() - perfStart;
+
+  const effectWorkerResult: EffectWorkerResult = {
+    result: effectResult.result,
+    calcTime: effectResult.calcTime, 
+    total: perfEnd,
+  }
+
+  scope.postMessage(effectWorkerResult, [effectResult.result.buffer]);
 }

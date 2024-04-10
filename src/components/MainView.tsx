@@ -1,14 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { dispatcher } from "./Dispatcher";
-import { imageHolder } from "./ImageHolder";
+import { useRef } from "react";
+import useImage from "./useImage";
+import Clock from "./Clock";
 
 // interface MainViewProps {
 //   dispatcher: Dispatcher;
 // }
-
-async function updateImageInHolder(buffer: ArrayBuffer) {
-  imageHolder.setImage(buffer);
-}
 
 // const urlCreator = window.URL || window.webkitURL;
 // const blob = new Blob([imageHolder.getImageBuffer()], {type: "image/jpeg"});
@@ -18,40 +14,35 @@ async function updateImageInHolder(buffer: ArrayBuffer) {
 export default function MainView() {
 
   const imageRef = useRef<HTMLImageElement>(null!);
-  const [imageReady, setImageReady] = useState(false);
-  
-  const setImage = useCallback((buffer: ArrayBuffer) => {
-    imageHolder.setImage(buffer).then(() => {
-      setImageReady(true);
-      dispatcher.dispatch<"imageReady">("imageReady", true);
-      updateView();
-    })
-  }, []);
 
-  function updateView() {
-    imageHolder.getBase64Buffer().then((buf) => {
-      if (buf == null) return;
-      imageRef.current.src = buf;
-    })
-  }
-
-  useEffect(() => {
-    dispatcher.subscribe<"imageLoaded">("imageLoaded", setImage);
-  }, [setImage]);
-
-  useEffect(() => {
-    dispatcher.subscribe<"updateView">("updateView", updateView);
-  }, []);
+  const image = useImage();
 
   return (
-    <main className="mainview flex justify-center items-center">
+    <main className="mainview flex flex-col justify-start items-start pl-8">
 
-      <div className={`w-1/2 h-3/4 border-4 border-slate-500 border-dashed 
-        flex items-center justify-center ${imageReady ? "hidden" : ""}`}>
-        <p className=" text-slate-500">No image selected yet..</p>
+      <div className={`w-full h-3/4 max-h-[800px] border-4 border-slate-500 border-dashed 
+        flex items-center justify-center relative z-10 ${image.loading ? "loadingflash" : ""}
+        overflow-hidden ${image.ready ? "hidden" : ""}`}>
+        <p className="text-slate-500 text-2xl">
+          {image.loading ? "Loading image pixels..." : "No image selected"}
+        </p>
       </div>
 
-      <img className={`max-h-[500px] max-w-[500px] ${imageReady ? "" : "hidden"}`} ref={imageRef} />
+      <div className="relative">
+        <div id="mainimgcover" className={`flex flex-col gap-2 font-["calibri"] ${image.processing ? "processing" : ""}`}>
+          <p className="text-2xl">Processing . . .</p>
+          <Clock />
+        </div>
+          
+        <img className=
+          {`border-2 border-gray-200 z-10 ${image.ready ? "" : "hidden"}`}
+          id="mainimg"
+          ref={imageRef} 
+          src={image.src} />
+      </div>
+
+
+      
 
     </main>
   )
