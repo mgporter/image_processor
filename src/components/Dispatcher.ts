@@ -40,7 +40,7 @@ class Dispatcher {
   }
 
   dispatch<K extends keyof DispatcherMap>(event: K, data: DispatcherMap[K]) {
-    console.log("DISPATCHER: " + event);
+    // console.log("DISPATCHER: " + event);
     this.Events[event].forEach(cb => cb(data));
   }
 

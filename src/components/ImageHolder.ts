@@ -13,6 +13,10 @@ export interface EffectWorkerResult {
   result: Uint8Array;
 }
 
+export interface test<Eff> {
+
+}
+
 // @ts-expect-error Jimp is global object
 const jimp = (window.Jimp as JimpConstructors);
 
@@ -72,7 +76,7 @@ class ImageHolder {
     return await this.image.getBase64Async("image/jpeg");
   }
 
-  applyEffect(effectType: EffectType, useWasm: boolean) {
+  applyEffect(effectType: EffectType, settings: number[], useWasm: boolean) {
     if (this.image == null) return null;
     
     // Use url string to allow passing in a TS file to worker. "Module" is needed to use import statements.
@@ -100,7 +104,7 @@ class ImageHolder {
       buffer: this.image.bitmap.data,
       width: this.image.bitmap.width,
       height: this.image.bitmap.height,
-      values: [0.05, 0.09, 0.12, 0.15, 0.18, 0.15, 0.12, 0.09, 0.05],
+      values: settings,
       effectType: effectType,
       useWasm: useWasm,
     }, [this.image.bitmap.data.buffer]);

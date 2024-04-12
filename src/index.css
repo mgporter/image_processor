@@ -41,8 +41,6 @@ h1 {
 
 button, .button {
   border-radius: 8px;
-  /* border: 1px solid transparent; */
-  /* padding: 0.2rem 1.2rem; */
   font-size: 1rem;
   font-family: inherit;
   background-color: #757575;
@@ -52,7 +50,6 @@ button, .button {
 }
 button:disabled, .button.disabled {
   background-color: #4f4f4f;
-  border-color: transparent;
   color:#b4b4b4;
 }
 button:hover:enabled, .button:hover {
