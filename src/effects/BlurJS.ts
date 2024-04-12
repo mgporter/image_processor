@@ -1,4 +1,4 @@
-import { EffectResult } from "../components/ImageHolder";
+import { EffectResult } from "../components/WorkerExecutor";
 
 type Pixel = [number, number, number, number];
 type Coordinate = [number, number];
@@ -35,9 +35,6 @@ class BlurJS {
       this.setPixelFromIndex(output, sumRGBA, px);
 
     }
-
-    // this.data = output;
-    // output = new Uint8Array(this.data.length);
 
     // Do Vertical pass
     for (let px = 0; px < this.data.length; px += 4) {

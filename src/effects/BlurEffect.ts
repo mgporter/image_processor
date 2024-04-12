@@ -1,4 +1,4 @@
-import { BlurOptions } from "../components/ImageHolder";
+import { BlurOptions } from "../components/WorkerExecutor";
 import { BlurJS } from "./BlurJS";
 import { BlurWasm } from "./BlurWasm";
 

@@ -68,7 +68,7 @@ export default function LeftPanel() {
   return (
     <aside className="leftpanel flex flex-col items-stretch gap-4 pr-8">
     <div className="flex gap-4 h-8">
-      <label htmlFor="fileinput" className={`button self-center py-1 px-8 flex-grow-[2] ${disableFileInput ? "disabled" : ""}`} >
+      <label htmlFor="fileinput" className={`button self-center py-1 px-8 flex-grow-[2] border-2 border-slate-300 ${disableFileInput ? "disabled" : ""}`} >
         Select an image
         <input className="opacity-0 w-0 h-0" type="file" id="fileinput" accept="image/*" onChange={handleFileSelection} />
       </label>
