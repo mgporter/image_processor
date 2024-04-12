@@ -68,7 +68,10 @@ div#root {
   width: 100%;
   min-height: 100vh;
   grid-template-areas: "lp mn";
-  grid-template-columns: 40% 60% ;
+  grid-template-columns: 40% 60%;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
 .mainview {

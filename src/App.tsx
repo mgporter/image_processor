@@ -1,4 +1,3 @@
-import './App.css'
 import LeftPanel from './components/LeftPanel'
 import MainView from './components/MainView'
 
