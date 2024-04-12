@@ -2,10 +2,12 @@ import { useEffect, useState } from "react"
 import { DispatcherMap, dispatcher } from "./Dispatcher";
 import Clock from "./Clock";
 
-const defaultResult: DispatcherMap["effectEnd"] = {
-  type: "blur",
-  method: "js",
-  total: 0,
+type EventTimingType = Pick<DispatcherMap["effectEnd"], "totalTime" | "calcTime" | "options" | "useWasm">
+
+const defaultResult: EventTimingType = {
+  options: {effectType: "blur"},
+  useWasm: true,
+  totalTime: 0,
   calcTime: 0,
 }
 
@@ -17,7 +19,7 @@ export default function EffectTimer() {
 
   const [showClock, setShowClock] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [result, setResult] = useState<DispatcherMap["effectEnd"]>(defaultResult);
+  const [result, setResult] = useState<EventTimingType>(defaultResult);
 
   useEffect(() => {
     const unsubscribe = dispatcher.subscribe<"effectStart">("effectStart", startTimer);
@@ -44,9 +46,9 @@ export default function EffectTimer() {
     <div className="w-full min-h-24 flex flex-col items-center text-left gap-4">
       {showResults && 
       <div>
-        <p>Effect type <span className="font-bold">{result.type}</span> took {timef(result.total)} ms when run using 
-        {result.method === "js" ? " JavaScript." : " WebAssembly."}</p>
-        <p className="text-sm mt-3">({timef(result.calcTime)} ms calculations + {timef(result.total - result.calcTime)} ms overhead)</p> 
+        <p>Effect type <span className="font-bold">{result.options.effectType}</span> took {timef(result.totalTime)} ms when run using 
+        {result.useWasm ? " WebAssembly." : " JavaScript." }</p>
+        <p className="text-sm mt-3">({timef(result.calcTime)} ms calculations + {timef(result.totalTime - result.calcTime)} ms overhead)</p> 
       </div>
       }
     </div>

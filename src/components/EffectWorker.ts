@@ -1,28 +1,38 @@
-import { EffectType } from "../effects/EffectType";
 import { blurEffect } from "../effects/BlurEffect";
-import { EffectResult, EffectWorkerResult } from "./ImageHolder";
+import { BlurOptions, EffectResult, EffectWorkerMessage } from "./WorkerExecutor";
 
 const scope = (self as unknown) as Worker;
 
-scope.onmessage = async (e) => {
+
+
+scope.onmessage = async (e: MessageEvent<EffectWorkerMessage>) => {
 
   const perfStart = performance.now();
 
   let effectResult: EffectResult;
   
-  switch((e.data.effectType as EffectType)) {
+  switch(e.data.options.effectType) {
     case "blur": {
-      effectResult = await blurEffect(e.data.buffer, e.data.width, e.data.height, e.data.values, e.data.useWasm);
+      effectResult = await blurEffect(
+        e.data.buffer, 
+        e.data.imageWidth, 
+        e.data.imageHeight, 
+        (e.data.options as BlurOptions), 
+        e.data.useWasm);
       break;
     }
   }
 
   const perfEnd = performance.now() - perfStart;
 
-  const effectWorkerResult: EffectWorkerResult = {
-    result: effectResult.result,
+  const effectWorkerResult: EffectWorkerMessage = {
+    options: e.data.options,
+    useWasm: e.data.useWasm,
+    buffer: effectResult.result,
     calcTime: effectResult.calcTime, 
-    total: perfEnd,
+    totalTime: perfEnd,
+    imageWidth: e.data.imageWidth,
+    imageHeight: e.data.imageHeight,
   }
 
   scope.postMessage(effectWorkerResult, [effectResult.result.buffer]);

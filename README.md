@@ -4,6 +4,7 @@ In development...
 
 Web Workers
 WASM modules from C++
+File upload and download
 
 
 WebAssembly allows the running of compiled languages in the browser at near native speeds. This example is meant to show off this speed increase by comparing it to the same operation performed in pure Javascript. The WebAssembly code (compiled from C++) and the Javascript code are nearly identical: both use a two-pass version of the gaussian blur algorithm to transform the image. Nonetheless, the WebAssembly implementation easily beats Javascript by a factor of 10 in most cases.

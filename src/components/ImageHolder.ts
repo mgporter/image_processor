@@ -1,21 +1,6 @@
 import { dispatcher } from "./Dispatcher";
 import { Jimp, JimpConstructors } from "../jimp";
-import { EffectType } from "../effects/EffectType";
-
-export interface EffectResult {
-  calcTime: number;
-  result: Uint8Array;
-}
-
-export interface EffectWorkerResult {
-  calcTime: number;
-  total: number;
-  result: Uint8Array;
-}
-
-export interface test<Eff> {
-
-}
+import { EffectOptions, EffectWorkerMessage, WorkerExecutor } from "./WorkerExecutor";
 
 // @ts-expect-error Jimp is global object
 const jimp = (window.Jimp as JimpConstructors);
@@ -26,11 +11,15 @@ class ImageHolder {
   private image: Jimp | null = null;
   private name: string;
   private type: string;
+  private extension: string;
+  private workerExecutor: WorkerExecutor;
 
   constructor() {
     this.imageArrayBuffer = new Uint8Array(0);
     this.name = "";
     this.type = "";
+    this.extension = "";
+    this.workerExecutor = new WorkerExecutor();
   }
 
   containsImage() {
@@ -45,20 +34,25 @@ class ImageHolder {
     return this.image ? this.image.bitmap.height : 0;
   }
 
-  setName(name: string) {
-    this.name = name;
+  setFile(file: File) {
+    let extdot = file.name.lastIndexOf(".");
+    if (extdot == -1) extdot = file.name.length;
+
+    this.name = file.name.substring(0, extdot);
+    this.extension = file.name.substring(extdot+1);
+    this.type = file.type;
   }
 
   getName() {
     return this.name;
   }
 
-  setType(type: string) {
-    this.type = type;
-  }
-
   getType() {
     return this.type;
+  }
+
+  getExtension() {
+    return this.extension;
   }
 
   async setImage(buffer: ArrayBuffer) {
@@ -73,44 +67,39 @@ class ImageHolder {
 
   async getBase64Buffer() {
     if (this.image == null) return null;
-    return await this.image.getBase64Async("image/jpeg");
+    return await this.image.getBase64Async(jimp.AUTO);
   }
 
-  applyEffect(effectType: EffectType, settings: number[], useWasm: boolean) {
+  updateImageData(buffer: ArrayBuffer) {
+    if (this.image != null) {
+      this.image.bitmap.data = buffer as Buffer;
+    }
+  }
+
+  applyEffect(options: EffectOptions, useWasm: boolean) {
     if (this.image == null) return null;
-    
-    // Use url string to allow passing in a TS file to worker. "Module" is needed to use import statements.
-    const worker = new Worker(new URL("./EffectWorker.ts", import.meta.url), {type: 'module'});  
 
-    // Handle worker's results
-    worker.onmessage = (e: MessageEvent<EffectWorkerResult>) => {
-      if (this.image == null) return null;
+    const dispatch: EffectWorkerMessage = {
+      buffer: this.image.bitmap.data,
+      imageWidth: this.image.bitmap.width,
+      imageHeight: this.image.bitmap.height,
+      options: options,
+      useWasm: useWasm,
+      totalTime: -1,
+      calcTime: -1,
+    }
 
-      dispatcher.dispatch<"effectEnd">("effectEnd", {
-        type: effectType,
-        method: useWasm ? "wasm" : "js",
-        total: e.data.total,
-        calcTime: e.data.calcTime,
-      });
-
-      this.image.bitmap.data = (e.data.result as Buffer);
+    this.workerExecutor.getInstance().onmessage = (e: MessageEvent<EffectWorkerMessage>) => {
+      dispatcher.dispatch<"effectEnd">("effectEnd", e.data);
+      this.updateImageData(e.data.buffer);
       dispatcher.dispatch<"updateView">("updateView", null);
     }
 
-    dispatcher.dispatch<"effectStart">("effectStart", "blur");
-
     // Start the worker
-    worker.postMessage({
-      buffer: this.image.bitmap.data,
-      width: this.image.bitmap.width,
-      height: this.image.bitmap.height,
-      values: settings,
-      effectType: effectType,
-      useWasm: useWasm,
-    }, [this.image.bitmap.data.buffer]);
+    dispatcher.dispatch<"effectStart">("effectStart", options.effectType);
+    this.workerExecutor.getInstance().postMessage(dispatch, [this.image.bitmap.data.buffer]);
 
   }
-
 
 }
 

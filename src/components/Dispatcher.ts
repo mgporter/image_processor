@@ -1,4 +1,4 @@
-import { EffectType } from "../effects/EffectType";
+import { EffectType, EffectWorkerMessage } from "./WorkerExecutor";
 
 export interface EffectEnd {
   type: EffectType;
@@ -15,7 +15,7 @@ export interface DispatcherMap {
   imageReady: boolean;
   updateView: null;
   effectStart: EffectType;
-  effectEnd: EffectEnd;
+  effectEnd: EffectWorkerMessage;
 }
 
 // eslint-disable-next-line

@@ -1,33 +1,19 @@
-import { ChangeEvent, MouseEvent, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { dispatcher } from "./Dispatcher";
 import { imageHolder } from "./ImageHolder";
 import EffectTimer from "./EffectTimer";
 import useImage from "./useImage";
 import RunHistory from "./RunHistory";
 import BlurSlider from "./BlurSlider";
-
-function addNumberCommas(num: number) {
-
-  let numStr = num.toString();
-  let output = "";
-
-  while (numStr.length > 3) {
-    output = "," + numStr.substring(numStr.length - 3) + output;
-    numStr = numStr.substring(0, numStr.length - 3);
-  }
-
-  return numStr.length === 0 ? output : numStr + output;
-
-}
+import { BlurOptions } from "./WorkerExecutor";
+import { addNumberCommas } from "./Utils";
 
 const detailsProps = "font-bold text-amber-500";
-
-const DEFAULT_GAUSSIAN_MATRIX = [0.06475879783294587, 0.12098536225957168, 0.17603266338214976, 0.19947114020071635, 0.17603266338214976, 0.12098536225957168, 0.06475879783294587];
 
 export default function LeftPanel() {
 
   const image = useImage();
-  const [gaussianMatrix, setGaussianMatrix] = useState<number[]>(DEFAULT_GAUSSIAN_MATRIX);
+  const [gaussianStdDev, setGaussianStdDev] = useState<number>(3);
 
   function handleFileSelection(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files ? e.target.files[0] : null;
@@ -39,8 +25,7 @@ export default function LeftPanel() {
 
     worker.onmessage = (e: MessageEvent<ArrayBuffer>) => {
       imageHolder.setImage(e.data).then(() => {
-        imageHolder.setName(file.name);
-        imageHolder.setType(file.type);
+        imageHolder.setFile(file);
         dispatcher.dispatch<"imageReady">("imageReady", true);
       });
     }
@@ -56,7 +41,7 @@ export default function LeftPanel() {
 
       const element = document.createElement('a');
       element.href = data;
-      element.download = "test_file";
+      element.download = `${imageHolder.getName()} blurred`;
       element.style.display = "none";
       document.body.appendChild(element);
       element.click();
@@ -66,19 +51,31 @@ export default function LeftPanel() {
     
   }
 
+  function applyBlur(useWasm: boolean) {
+
+    const options: BlurOptions = {
+      effectType: "blur", 
+      gaussianStdDev: gaussianStdDev,
+    }
+
+    imageHolder.applyEffect(options, useWasm);
+
+  }
+
   const disableControls = !image.ready || image.processing;
   const disableFileInput = image.loading || image.processing;
 
-  imageHolder.getBase64Buffer().then(x => console.log(x));
-
   return (
     <aside className="leftpanel flex flex-col items-stretch gap-4 pr-8">
-      <label htmlFor="fileinput" className={`button self-center ${disableFileInput ? "disabled" : ""}`} style={{padding: "0.2rem 3rem"}}>
+    <div className="flex gap-4 h-8">
+      <label htmlFor="fileinput" className={`button self-center py-1 px-8 flex-grow-[2] ${disableFileInput ? "disabled" : ""}`} >
         Select an image
         <input className="opacity-0 w-0 h-0" type="file" id="fileinput" accept="image/*" onChange={handleFileSelection} />
       </label>
 
-      <button onClick={handleFileDownload}>DOWNLOAD</button>
+      <button disabled={disableControls} className="py-1 px-4 flex-grow-[1]" onClick={handleFileDownload}>Save image...</button>
+    </div>
+
 
       <div className={`flex flex-col items-start text-left w-full font-["calibri"] ${image.ready ? "" : "opacity-50"}`}>
         <p><span className={detailsProps}>Name:</span> {image.ready ? imageHolder.getName() : ""}</p>
@@ -93,14 +90,14 @@ export default function LeftPanel() {
         <button 
           className="rounded-l-lg rounded-r-none py-1 px-4 border-r-[1px] border-slate-400 w-1/2"
           disabled={disableControls} 
-          onClick={() => imageHolder.applyEffect("blur", gaussianMatrix, false)}>Blur with Javascript</button>
+          onClick={() => applyBlur(false)}>Blur with Javascript</button>
         <button 
           className="rounded-l-none rounded-r-lg py-1 px-4 w-1/2"
           disabled={disableControls} 
-          onClick={() => imageHolder.applyEffect("blur", gaussianMatrix, true)}>Blur with WebAssembly</button>
+          onClick={() => applyBlur(true)}>Blur with WebAssembly</button>
       </div>
 
-      <BlurSlider setGaussianMatrix={setGaussianMatrix} active={!disableControls} />
+      <BlurSlider setGaussianStdDev={setGaussianStdDev} gaussianStdDev={gaussianStdDev} active={!disableControls} />
 
       {image.ready && <EffectTimer />}
 

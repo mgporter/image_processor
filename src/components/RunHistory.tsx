@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { EffectEnd, dispatcher } from "./Dispatcher";
+import { dispatcher } from "./Dispatcher";
+import { BlurOptions, EffectWorkerMessage } from "./WorkerExecutor";
 
 export default function RunHistory() {
 
-  const [history, setHistory] = useState<EffectEnd[]>([]);
+  const [history, setHistory] = useState<EffectWorkerMessage[]>([]);
 
   useEffect(() => {
-    const unsubscribe = dispatcher.subscribe<"effectEnd">("effectEnd", (info) => {console.log("test"); setHistory(prev => [info, ...prev])});
+    const unsubscribe = dispatcher.subscribe<"effectEnd">("effectEnd", (info) => {console.log(info); setHistory(prev => [info, ...prev])});
     return unsubscribe;
   }, []);
 
@@ -16,7 +17,7 @@ export default function RunHistory() {
   }, []);
 
   const maxTime = history.reduce((val, cur) => {
-    return Math.max(val, cur.total);
+    return Math.max(val, cur.totalTime);
   }, 0);
 
   return (
@@ -25,19 +26,20 @@ export default function RunHistory() {
       <hr className="w-full" />
       <ul className="text-sm whitespace-pre">
         {history.map((info, i) => {
-          const percent = (info.total / maxTime) * 100;
+          const percent = (info.totalTime / maxTime) * 100;
           return <li key={i} className="flex">
             <div className="p-1 pr-3">{(history.length - (i)).toString().padStart(2, "0")}</div>
-            <div className={`p-1 pl-2 ${info.method === "js" ? "bg-red-700" : "bg-blue-700"}`}
+            <div className={`p-1 pl-2 ${info.useWasm ? "bg-blue-700" : "bg-red-700"}`}
             style={{width: `${percent * .85}%`, overflow: "visible"}}>
-              {info.method === "js" ? "JS      " : "Wasm"} &nbsp;
-              {info.total.toFixed(1)} ms &nbsp;&nbsp;
-              ({percent.toFixed(1)}%)</div>
+              {info.useWasm ? "Wasm " : "JS "}
+              <span className="text-xs">
+                (StdDev: {(info.options as BlurOptions).gaussianStdDev}) &nbsp;  
+                {info.totalTime.toFixed(1)} ms &nbsp;
+              </span>
+            </div>
           </li> 
         })}
       </ul>
     </div>
   )
 }
-
-// {backgroundImage: `linear-gradient(90deg, ${bg} ${percent-1}%, transparent ${percent})`}
