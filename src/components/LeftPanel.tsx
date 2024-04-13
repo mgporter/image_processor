@@ -32,8 +32,6 @@ export default function LeftPanel() {
 
     dispatcher.dispatch<"imageSelected">("imageSelected", null);
 
-    console.log("loading")
-
     workerExecutor.getLoaderWorker().onmessage = (e: MessageEvent<ArrayBuffer>) => {
 
       imageHolder.getImage(e.data).then((image) => {
@@ -90,9 +88,9 @@ export default function LeftPanel() {
   const disableFileInput = image.loading || image.processing;
 
   return (
-    <aside className="leftpanel flex flex-col items-stretch gap-4 pr-8">
-      <div className="flex gap-4 h-8">
-        <label htmlFor="fileinput" className={`button self-center py-1 px-8 flex-grow-[2] border-2 border-slate-300 ${disableFileInput ? "disabled" : ""}`} >
+    <aside className="leftpanel flex flex-col items-stretch gap-4 pr-1 md:pr-4 ">
+      <div className="flex items-stretch gap-4">
+        <label htmlFor="fileinput" className={`button py-1 px-8 flex-grow-[2] border-2 border-slate-300 ${disableFileInput ? "disabled" : ""}`} >
           Select an image
           <input className="opacity-0 w-0 h-0" ref={fileInputRef} type="file" id="fileinput" accept="image/*" onChange={handleFileSelection} />
         </label>
@@ -119,7 +117,7 @@ export default function LeftPanel() {
 
       <hr className="w-full h-2"/>
 
-      <div className="flex mx-6">
+      <div className="flex lg:mx-6">
         <button 
           className="rounded-l-lg rounded-r-none py-1 px-4 border-r-[1px] border-slate-400 w-1/2"
           disabled={disableControls} 

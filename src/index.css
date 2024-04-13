@@ -74,6 +74,22 @@ div#root {
   text-align: center;
 }
 
+@media screen and (max-width: 800px) {
+  div#root {
+    padding: 1rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  div#root {
+    grid-template-areas: "mn" "lp";
+    grid-template-columns: 100%;
+    gap: 2rem;
+  }
+}
+
+
+
 .mainview {
   grid-area: mn;
 }

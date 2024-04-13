@@ -9,7 +9,7 @@ export default function MainView() {
   const image = useImage();
 
   return (
-    <main className="mainview flex flex-col justify-start items-start pl-8">
+    <main className="mainview flex flex-col justify-start items-start pl-1 md:pl-4">
 
       <div className={`w-full h-3/4 max-h-[800px] border-4 border-slate-500 
         flex items-center justify-center relative z-10 ${image.loading ? "loadingflash" : ""}
@@ -21,7 +21,7 @@ export default function MainView() {
 
       <div className="relative">
         <div id="mainimgcover" 
-          className={`flex flex-col gap-2 font-["calibri"] font-extrabold z-20 absolute inset-0 pt-[min(45%,15rem)]
+          className={`flex flex-col justify-center gap-2 font-["calibri"] font-extrabold z-20 absolute inset-0 
            bg-black/40 text-white/50 transition-opacity ${image.processing ? "opacity-100" : "opacity-0"}`}>
           <p className="text-2xl">Processing . . .</p>
           <Clock />

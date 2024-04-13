@@ -21,10 +21,9 @@ export default function useImage() {
         setSrc(buf);
       });
 
-    } else if (!imageHolder.containsImage()) {
-
+    } 
+    else if (!imageHolder.containsImage()) {
       setReady(false);
-
     }
 
   }, []);
