@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { DispatcherMap, dispatcher } from "./Dispatcher";
-import Clock from "./Clock";
 
 type EventTimingType = Pick<DispatcherMap["effectEnd"], "totalTime" | "calcTime" | "options" | "useWasm">
 
@@ -17,7 +16,6 @@ function timef(n: number) {
 
 export default function EffectTimer() {
 
-  const [showClock, setShowClock] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [result, setResult] = useState<EventTimingType>(defaultResult);
 
@@ -32,12 +30,10 @@ export default function EffectTimer() {
   }, []);
 
   function startTimer() {
-    setShowClock(true);
     setShowResults(false);
   }
 
   function onEffectEnd(result: DispatcherMap["effectEnd"]) {
-    setShowClock(false);
     setShowResults(true);
     setResult(result);
   }

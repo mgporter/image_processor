@@ -13,6 +13,7 @@ export interface DispatcherMap {
   imageSelected: null;
   imageLoaded: {name: string, type: string, buffer: ArrayBuffer};
   imageReady: boolean;
+  imageUnloaded: null;
   updateView: null;
   effectStart: EffectType;
   effectEnd: EffectWorkerMessage;
@@ -26,6 +27,7 @@ class Dispatcher {
   private Events: DispatcherEventObj = {
     imageLoaded: [],
     imageReady: [],
+    imageUnloaded: [],
     updateView: [],
     imageSelected: [],
     effectStart: [],

@@ -1,11 +1,9 @@
+// This module was compiled with:
 // emcc BlurWasmSrc.cpp -o BlurWasmSrc.js -s EXPORTED_FUNCTIONS='["_blur"]' -s IMPORTED_MEMORY=1 -s TOTAL_MEMORY=64MB -std=c++20 -O2
+
 // #include <emscripten.h>
 #include <math.h>
 #include <vector>
-
-// #include <utility>
-// use std::cmp_equal / cmp_not_equal / cmp_less / cmp_greater / cmp_less_equal / cmp_greater_equal
-
 
 struct Pixel {
   unsigned char red{};
@@ -137,8 +135,6 @@ class BlurWasm {
 };
 
 extern "C" {
-
-
 
   int blur(int w, int h, unsigned char* data_pointer, int dLength, double* grid, int grid_length) {
     BlurWasm blur{w, h, data_pointer, dLength, grid, grid_length};

@@ -7,7 +7,7 @@ export default function RunHistory() {
   const [history, setHistory] = useState<EffectWorkerMessage[]>([]);
 
   useEffect(() => {
-    const unsubscribe = dispatcher.subscribe<"effectEnd">("effectEnd", (info) => {console.log(info); setHistory(prev => [info, ...prev])});
+    const unsubscribe = dispatcher.subscribe<"effectEnd">("effectEnd", (info) => {setHistory(prev => [info, ...prev])});
     return unsubscribe;
   }, []);
 

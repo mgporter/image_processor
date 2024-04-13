@@ -1,7 +1,6 @@
 import wasm from "./BlurWasmSrc.wasm?url";
 
 async function BlurWasm(data: Uint8Array, width: number, height: number, grid: number[]) {
-  // ONLY ACCEPT IMAGES UP TO 8.38 mil pixels
 
   // Create new memory
   const MEMORY_LENGTH = 1024;

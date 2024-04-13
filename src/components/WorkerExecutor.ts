@@ -26,14 +26,21 @@ export interface BlurOptions extends EffectOptions {
 
 class WorkerExecutor {
 
-  private worker = new Worker(new URL("./EffectWorker.ts", import.meta.url), {type: 'module'});
+  private effectWorker = new Worker(new URL("./EffectWorker.ts", import.meta.url), {type: 'module'});
+  private loaderWorker = new Worker(new URL("./LoaderWorker.ts", import.meta.url), {type: "module"});
 
   constructor() {}
 
-  getInstance() {
-    return this.worker;
+  getEffectWorker() {
+    return this.effectWorker;
+  }
+
+  getLoaderWorker() {
+    return this.loaderWorker;
   }
 
 }
 
-export { WorkerExecutor };
+const workerExecutor = new WorkerExecutor();
+
+export { workerExecutor };

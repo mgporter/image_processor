@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { imageHolder } from "./ImageHolder";
-import { dispatcher } from "./Dispatcher";
+import { DispatcherMap, dispatcher } from "./Dispatcher";
 
 export default function useImage() {
 
@@ -9,14 +9,24 @@ export default function useImage() {
   const [processing, setProcessing] = useState(false);
   const [src, setSrc] = useState("");
 
-  const imageReady = useCallback(() => {
+  const imageReady = useCallback((ready: DispatcherMap["imageReady"]) => {
     setReady(true);
     setLoading(false);
-    imageHolder.getBase64Buffer().then((buf) => {
-      if (buf == null) return;
-      setProcessing(false);
-      setSrc(buf);
-    });
+
+    if (ready) {
+
+      imageHolder.getBase64Buffer().then((buf) => {
+        if (buf == null) return;
+        setProcessing(false);
+        setSrc(buf);
+      });
+
+    } else if (!imageHolder.containsImage()) {
+
+      setReady(false);
+
+    }
+
   }, []);
 
   useEffect(() => {

@@ -1,29 +1,26 @@
 import { dispatcher } from "./Dispatcher";
 import { Jimp, JimpConstructors } from "../jimp";
-import { EffectOptions, EffectWorkerMessage, WorkerExecutor } from "./WorkerExecutor";
+import { EffectOptions, EffectWorkerMessage, workerExecutor } from "./WorkerExecutor";
 
 // @ts-expect-error Jimp is global object
 const jimp = (window.Jimp as JimpConstructors);
 
 class ImageHolder {
 
-  private imageArrayBuffer: ArrayBuffer;
   private image: Jimp | null = null;
   private name: string;
   private type: string;
   private extension: string;
-  private workerExecutor: WorkerExecutor;
+  private workerExecutor = workerExecutor;
 
   constructor() {
-    this.imageArrayBuffer = new Uint8Array(0);
     this.name = "";
     this.type = "";
     this.extension = "";
-    this.workerExecutor = new WorkerExecutor();
   }
 
   containsImage() {
-    return this.imageArrayBuffer != null;
+    return this.image != null;
   }
 
   getWidth() {
@@ -55,15 +52,26 @@ class ImageHolder {
     return this.extension;
   }
 
-  async setImage(buffer: ArrayBuffer) {
-    const image = await jimp.read(buffer as Buffer)
-    this.image = image;
+  clearImage() {
+    this.image = null;
+    this.name = "";
+    this.type = "";
+    this.extension = "";
   }
 
-  async getImageBuffer() {
-    if (this.image == null) return null;
-    return await this.image.getBufferAsync("image/jpeg");
+  async getImage(buffer: ArrayBuffer) {
+    return jimp.read(buffer as Buffer);
   }
+
+  setImage(image: Jimp, file?: File) {
+    this.image = image;
+    if (file) this.setFile(file);
+  }
+
+  // async setImage(buffer: ArrayBuffer) {
+  //   const image = await jimp.read(buffer as Buffer)
+  //   this.image = image;
+  // }
 
   async getBase64Buffer() {
     if (this.image == null) return null;
@@ -89,7 +97,7 @@ class ImageHolder {
       calcTime: -1,
     }
 
-    this.workerExecutor.getInstance().onmessage = (e: MessageEvent<EffectWorkerMessage>) => {
+    this.workerExecutor.getEffectWorker().onmessage = (e: MessageEvent<EffectWorkerMessage>) => {
       dispatcher.dispatch<"effectEnd">("effectEnd", e.data);
       this.updateImageData(e.data.buffer);
       dispatcher.dispatch<"updateView">("updateView", null);
@@ -97,7 +105,7 @@ class ImageHolder {
 
     // Start the worker
     dispatcher.dispatch<"effectStart">("effectStart", options.effectType);
-    this.workerExecutor.getInstance().postMessage(dispatch, [this.image.bitmap.data.buffer]);
+    this.workerExecutor.getEffectWorker().postMessage(dispatch, [this.image.bitmap.data.buffer]);
 
   }
 

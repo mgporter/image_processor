@@ -3,8 +3,6 @@ import { BlurOptions, EffectResult, EffectWorkerMessage } from "./WorkerExecutor
 
 const scope = (self as unknown) as Worker;
 
-
-
 scope.onmessage = async (e: MessageEvent<EffectWorkerMessage>) => {
 
   const perfStart = performance.now();
